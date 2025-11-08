@@ -1,8 +1,8 @@
 <?php
 
-namespace Daniella\VendingMachine\Application\Response;
+namespace Daniella\VendingMachine\application\response;
 
-final class VendingResponse
+class VendingResponse
 {
     public function __construct(
         private bool $success,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Daniella\VendingMachine\Application\Response;
+namespace Daniella\VendingMachine\application\response;
 
 final class SuccessResponse extends VendingResponse
 {
