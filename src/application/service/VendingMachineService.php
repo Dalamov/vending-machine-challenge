@@ -81,9 +81,8 @@ class VendingMachineService
             $remainingCoins = $availableCoins;
 
             if ($changeAmount > 0) {
-                $changeResult = $this->dispenseChange($availableCoins, $changeAmount);
-                $changeCoins = $changeResult['coins'];
-                $remainingCoins = $changeResult['remaining'];
+                $changeCoins = $this->makeChange($availableCoins, $changeAmount);
+                $remainingCoins = $this->removeDispensedCoins($availableCoins, $changeCoins);
             }
 
             $machine->setAvailableChange($this->buildCoinEntities($remainingCoins));
@@ -200,85 +199,51 @@ class VendingMachineService
 
     /**
      * @param array<float> $availableCoins
-     * @return array{coins: array<float>, remaining: array<float>}
+     * @return array<float>
      */
-    private function dispenseChange(array $availableCoins, float $amount): array
+    private function makeChange(array $availableCoins, float $amount): array
     {
-        $denominations = [1.00, 0.25, 0.10, 0.05];
-        $counts = $this->buildCoinCounts($availableCoins);
-        $changeCoins = [];
-        $remainingAmount = $amount;
+        $sorted = $availableCoins;
+        rsort($sorted, SORT_NUMERIC);
 
-        foreach ($denominations as $denomination) {
-            $key = $this->formatCoinKey($denomination);
-            $available = $counts[$key] ?? 0;
+        $change = [];
+        $remaining = $amount;
 
-            while ($available > 0 && $this->canUseCoin($remainingAmount, $denomination)) {
-                $changeCoins[] = $denomination;
-                $remainingAmount = round($remainingAmount - $denomination, 2);
-                $available--;
+        foreach ($sorted as $coin) {
+            if ($remaining <= 0) {
+                break;
             }
 
-            $counts[$key] = $available;
+            if ($coin <= $remaining + 0.0001) {
+                $change[] = $coin;
+                $remaining = round($remaining - $coin, 2);
+            }
         }
 
-        if ($remainingAmount > 0) {
+        if ($remaining > 0) {
             throw new \RuntimeException("Unable to provide change for {$amount}.");
         }
 
-        return [
-            'coins' => $changeCoins,
-            'remaining' => $this->expandCountsToCoins($counts),
-        ];
+        return $change;
     }
 
     /**
-     * @param array<float> $coins
-     * @return array<string, int>
-     */
-    private function buildCoinCounts(array $coins): array
-    {
-        $counts = [];
-        foreach ($coins as $coin) {
-            if (!CoinDenominations::isValid($coin)) {
-                continue;
-            }
-
-            $key = $this->formatCoinKey($coin);
-            $counts[$key] = ($counts[$key] ?? 0) + 1;
-        }
-
-        return $counts;
-    }
-
-    private function formatCoinKey(float $value): string
-    {
-        return number_format($value, 2, '.', '');
-    }
-
-    private function canUseCoin(float $remaining, float $coin): bool
-    {
-        return round($remaining + 0.00001, 2) >= $coin;
-    }
-
-    /**
-     * @param array<string, int> $counts
+     * @param array<float> $available
+     * @param array<float> $dispensed
      * @return array<float>
      */
-    private function expandCountsToCoins(array $counts): array
+    private function removeDispensedCoins(array $available, array $dispensed): array
     {
-        $coins = [];
-        $denominations = [1.00, 0.25, 0.10, 0.05];
-
-        foreach ($denominations as $denomination) {
-            $key = $this->formatCoinKey($denomination);
-            $count = $counts[$key] ?? 0;
-            for ($i = 0; $i < $count; $i++) {
-                $coins[] = $denomination;
+        $remaining = $available;
+        foreach ($dispensed as $coin) {
+            $index = array_search($coin, $remaining, true);
+            if ($index === false) {
+                continue;
             }
+            unset($remaining[$index]);
         }
 
-        return $coins;
+        return array_values($remaining);
     }
 
     /**

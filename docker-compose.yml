@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  vending-machine:
+    build: .
+    ports:
+      - "8080:8080"
+
