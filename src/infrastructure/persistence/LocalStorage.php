@@ -15,6 +15,10 @@ class LocalStorage
         $this->filePath = $filePath;
 
         if (!file_exists($this->filePath)) {
+            $directory = dirname($this->filePath);
+            if (!is_dir($directory)) {
+                mkdir($directory, 0777, true);
+            }
             $this->saveInitialState();
         }
     }
@@ -52,7 +56,12 @@ class LocalStorage
             $coins[] = new Coin((float)$value);
         }
 
-        return new VendingMachine($items, $coins);
+        $machine = new VendingMachine($items, $coins);
+        if (isset($data['insertedAmount'])) {
+            $machine->setInsertedAmount((float)$data['insertedAmount']);
+        }
+
+        return $machine;
     }
 
     public function save(VendingMachine $machine): void

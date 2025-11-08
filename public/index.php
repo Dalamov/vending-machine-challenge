@@ -1,7 +1,14 @@
 <?php
 
-declare(strict_types=1);
+use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-echo "Vending Machine API Ready ";
+$app = AppFactory::create();
+
+$app->addBodyParsingMiddleware();
+
+// Cargar rutas
+(require __DIR__ . '/../src/infrastructure/http/routes.php')($app);
+
+$app->run();
