@@ -1,18 +1,20 @@
 <?php
 
-namespace Daniella\VendingMachine\Domain\Entity;
+namespace Daniella\VendingMachine\domain\entity;
 
 class VendingMachine
 {
     private float $insertedAmount;
     private array $items;
     private array $availableChange = [];
+    private array $insertedCoins = [];
 
-    public function __construct(array $items = [], array $availableChange = [])
+    public function __construct(array $items = [], array $availableChange = [], array $insertedCoins = [])
     {
         $this->items = $items;
         $this->availableChange = $availableChange;
         $this->insertedAmount = 0.0;
+        $this->setInsertedCoins($insertedCoins);
     }
 
     public function getInsertedAmount(): float
@@ -51,5 +53,25 @@ class VendingMachine
     public function getItem(string $code): ?Item
     {
         return $this->items[$code] ?? null;
+    }
+
+    public function getInsertedCoins(): array
+    {
+        return $this->insertedCoins;
+    }
+
+    public function setInsertedCoins(array $coins): void
+    {
+        $this->insertedCoins = array_map('floatval', $coins);
+    }
+
+    public function addInsertedCoin(float $coin): void
+    {
+        $this->insertedCoins[] = $coin;
+    }
+
+    public function clearInsertedCoins(): void
+    {
+        $this->insertedCoins = [];
     }
 }

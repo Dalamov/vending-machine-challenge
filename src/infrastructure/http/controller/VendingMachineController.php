@@ -54,8 +54,11 @@ class VendingMachineController
         $body = (array)$request->getParsedBody();
         $amount = isset($body['amount']) ? (int)$body['amount'] : 0;
         $itemName = isset($body['item']) ? (string)$body['item'] : '';
+        $changeConfig = isset($body['availableChange']) && is_array($body['availableChange'])
+            ? $body['availableChange']
+            : null;
 
-        $result = $this->service->restockItem($itemName, $amount);
+        $result = $this->service->restockItem($itemName, $amount, $changeConfig);
         return $this->respond($response, $result->toArray());
     }
 

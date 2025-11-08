@@ -1,6 +1,6 @@
 <?php
 
-namespace Daniella\VendingMachine\Domain\helper;
+namespace Daniella\VendingMachine\domain\helper;
 
 final class CoinDenominations
 {

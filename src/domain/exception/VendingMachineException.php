@@ -1,6 +1,6 @@
 <?php
 
-namespace Daniella\VendingMachine\Domain\exception;
+namespace Daniella\VendingMachine\domain\exception;
 
 class VendingMachineException extends \Exception
 {

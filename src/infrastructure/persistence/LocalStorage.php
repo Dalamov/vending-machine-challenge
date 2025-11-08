@@ -1,10 +1,10 @@
 <?php
 
-namespace Daniella\VendingMachine\Infrastructure\Persistence;
+namespace Daniella\VendingMachine\infrastructure\persistence;
 
-use Daniella\VendingMachine\Domain\Entity\VendingMachine;
-use Daniella\VendingMachine\Domain\Entity\Item;
-use Daniella\VendingMachine\Domain\Entity\Coin;
+use Daniella\VendingMachine\domain\entity\VendingMachine;
+use Daniella\VendingMachine\domain\entity\Item;
+use Daniella\VendingMachine\domain\entity\Coin;
 
 class LocalStorage
 {
@@ -33,6 +33,7 @@ class LocalStorage
                 'SODA'  => ['name' => 'Soda',  'price' => 1.50, 'quantity' => 5],
             ],
             'availableChange' => [1.00, 0.25, 0.10, 0.05],
+            'insertedCoins' => [],
         ];
 
         file_put_contents($this->filePath, json_encode($initial, JSON_PRETTY_PRINT));
@@ -52,11 +53,16 @@ class LocalStorage
         }
 
         $coins = [];
-        foreach ($data['availableChange'] as $value) {
+        foreach ($data['availableChange'] ?? [] as $value) {
             $coins[] = new Coin((float)$value);
         }
 
-        $machine = new VendingMachine($items, $coins);
+        $insertedCoins = array_map(
+            fn ($value) => (float)$value,
+            $data['insertedCoins'] ?? []
+        );
+
+        $machine = new VendingMachine($items, $coins, $insertedCoins);
         if (isset($data['insertedAmount'])) {
             $machine->setInsertedAmount((float)$data['insertedAmount']);
         }
@@ -84,6 +90,7 @@ class LocalStorage
             'insertedAmount' => $machine->getInsertedAmount(),
             'items' => $itemsData,
             'availableChange' => $coinsData,
+            'insertedCoins' => $machine->getInsertedCoins(),
         ];
 
         file_put_contents($this->filePath, json_encode($data, JSON_PRETTY_PRINT));

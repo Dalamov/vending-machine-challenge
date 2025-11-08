@@ -1,6 +1,6 @@
 <?php
 
-namespace Daniella\VendingMachine\Domain\Entity;
+namespace Daniella\VendingMachine\domain\entity;
 
 final class Coin
 {
