@@ -1,6 +1,6 @@
 # Vending Machine Challenge
 
-Implementación en PHP de una máquina expendedora que acepta monedas, dispensa productos y devuelve cambio, siguiendo los requisitos del reto **Senior Backend Engineer**.
+Implementación en PHP de una máquina expendedora que acepta monedas, dispensa productos y devuelve cambio
 
 ## Requisitos
 
