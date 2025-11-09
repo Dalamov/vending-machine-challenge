@@ -7,6 +7,7 @@ use Daniella\VendingMachine\application\service\VendingMachineService;
 use Daniella\VendingMachine\infrastructure\persistence\LocalStorage;
 use Daniella\VendingMachine\Application\Response\SuccessResponse;
 use Daniella\VendingMachine\Application\Response\ErrorResponse;
+use Psr\Log\NullLogger;
 
 class VendingMachineServiceTest extends TestCase
 {
@@ -25,7 +26,7 @@ class VendingMachineServiceTest extends TestCase
         }
 
         $storage = new LocalStorage($this->storagePath);
-        $this->service = new VendingMachineService($storage);
+        $this->service = new VendingMachineService($storage, new NullLogger());
     }
 
     protected function tearDown(): void

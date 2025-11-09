@@ -3,21 +3,25 @@
 namespace Daniella\VendingMachine\application\service;
 
 use Daniella\VendingMachine\infrastructure\persistence\LocalStorage;
-use Daniella\VendingMachine\domain\exception\OutOfStockException;
 use Daniella\VendingMachine\domain\exception\InvalidSelectionException;
+use Daniella\VendingMachine\domain\exception\OutOfStockException;
 use Daniella\VendingMachine\domain\helper\CoinDenominations;
 use Daniella\VendingMachine\domain\entity\Coin;
 use Daniella\VendingMachine\Application\Response\SuccessResponse;
 use Daniella\VendingMachine\Application\Response\ErrorResponse;
 use Daniella\VendingMachine\Application\Response\VendingResponse;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class VendingMachineService
 {
     private LocalStorage $storage;
+    private LoggerInterface $logger;
 
-    public function __construct(LocalStorage $storage)
+    public function __construct(LocalStorage $storage, ?LoggerInterface $logger = null)
     {
         $this->storage = $storage;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function insertCoin(float $value): VendingResponse
@@ -38,6 +42,7 @@ class VendingMachineService
                 ['insertedAmount' => $insertedAmount]
             );
         } catch (\Throwable $e) {
+            $this->logger->error('Failed to insert coin.', ['value' => $value, 'exception' => $e]);
             return new ErrorResponse($e->getMessage());
         }
     }
@@ -99,6 +104,7 @@ class VendingMachineService
                 ]
             );
         } catch (\Throwable $e) {
+            $this->logger->error('Failed to dispense selected item.', ['item' => $itemName, 'exception' => $e]);
             return new ErrorResponse($e->getMessage());
         }
     }
@@ -109,6 +115,7 @@ class VendingMachineService
         $totalInserted = $machine->getInsertedAmount();
 
         if ($totalInserted <= 0) {
+            $this->logger->warning('Attempted to return coins with zero balance.');
             return new ErrorResponse("No coins to return.");
         }
 
@@ -160,6 +167,12 @@ class VendingMachineService
 
             return new SuccessResponse("Service update completed.", $responseData);
         } catch (\Throwable $e) {
+            $this->logger->error('Failed to restock vending machine.', [
+                'item' => $itemName,
+                'amount' => $amount,
+                'changeConfig' => $changeConfig,
+                'exception' => $e,
+            ]);
             return new ErrorResponse($e->getMessage());
         }
     }
@@ -180,6 +193,7 @@ class VendingMachineService
 
             return new SuccessResponse("Inventory retrieved.", ['items' => $inventory]);
         } catch (\Throwable $e) {
+            $this->logger->error('Failed to retrieve inventory.', ['exception' => $e]);
             return new ErrorResponse($e->getMessage());
         }
     }
@@ -193,6 +207,7 @@ class VendingMachineService
                 'insertedAmount' => $amount
             ]);
         } catch (\Throwable $e) {
+            $this->logger->error('Failed to retrieve inserted amount.', ['exception' => $e]);
             return new ErrorResponse($e->getMessage());
         }
     }
