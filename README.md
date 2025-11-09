@@ -78,6 +78,7 @@ Cobertura principal:
 - `src/application/service/VendingMachineService.php`: lógica de negocio.
 - `src/infrastructure/persistence/LocalStorage.php`: persistencia en JSON.
 - `src/infrastructure/http/controller/VendingMachineController.php`: capa HTTP.
+- `src/infrastructure/logger/ErrorLogLogger.php`: logger PSR-3 que escribe en `error_log`.
 - `tests/application/service/VendingMachineServiceTest.php`: pruebas principales.
 
 ## Notas
@@ -85,4 +86,5 @@ Cobertura principal:
 - Se usa `LocalStorage` para simular almacenamiento en disco (`storage/vending_machine.json`). Se crea automáticamente si no existe.
 - El endpoint `/restock` permite al personal de servicio ajustar tanto el stock de ítems como la reserva de monedas.
 - Incluye `Dockerfile` y `docker-compose.yml` para ejecutar la aplicación sin instalar PHP localmente.
+- El servicio acepta un `LoggerInterface`. Por defecto se utiliza `ErrorLogLogger` tanto en las rutas como en el middleware global de Slim, lo que genera registros de cada error controlado y stack traces de cualquier excepción no capturada en `error_log`. Puedes reemplazarlo por otro logger PSR-3 (p. ej. Monolog) sin tocar la lógica del servicio.
 
